@@ -24,6 +24,9 @@ class DiskPlugin(hotplug.Plugin):
 		self._load_smallest = 0.01
 		self._cmd = commands()
 
+	dynamic_tuning_supported = True
+	static_tuning_supported = True
+
 	def _init_devices(self):
 		super(DiskPlugin, self)._init_devices()
 		self._devices_supported = True
@@ -85,22 +88,21 @@ class DiskPlugin(hotplug.Plugin):
 
 	def _instance_init(self, instance):
 		instance._has_static_tuning = True
+		# allow values needed for dynamic tuning to be initialized
+		instance._has_dynamic_tuning = True
 
 		self._apm_errcnt = 0
 		self._spindown_errcnt = 0
+		instance._load_monitor = None
 
-		if self._option_bool(instance.options["dynamic"]):
-			instance._has_dynamic_tuning = True
-			instance._load_monitor = \
-					self._monitors_repository.create(
-					"disk", instance.assigned_devices)
-			instance._device_idle = {}
-			instance._stats = {}
-			instance._idle = {}
-			instance._spindown_change_delayed = {}
-		else:
-			instance._has_dynamic_tuning = False
-			instance._load_monitor = None
+	def _instance_init_dynamic_tuning(self, instance):
+		instance._load_monitor = \
+				self._monitors_repository.create(
+				"disk", instance.assigned_devices)
+		instance._device_idle = {}
+		instance._stats = {}
+		instance._idle = {}
+		instance._spindown_change_delayed = {}
 
 	def _instance_cleanup(self, instance):
 		if instance._load_monitor is not None:

@@ -37,6 +37,9 @@ class CPULatencyPlugin(base.Plugin):
 		self._governors_map = {}
 		self._cmd = commands()
 
+	dynamic_tuning_supported = True
+	static_tuning_supported = True
+
 	def _init_devices(self):
 		self._devices_supported = True
 		self._free_devices = set()
@@ -127,6 +130,7 @@ class CPULatencyPlugin(base.Plugin):
 		instance._has_static_tuning = True
 		instance._has_dynamic_tuning = False
 
+		instance._load_monitor = None
 		# only the first instance of the plugin can control the latency
 		if list(self._instances.values())[0] == instance:
 			instance._first_instance = True
@@ -138,10 +142,11 @@ class CPULatencyPlugin(base.Plugin):
 			self._latency = None
 
 			if instance.options["force_latency"] is None:
-				instance._load_monitor = self._monitors_repository.create("load", None)
 				instance._has_dynamic_tuning = True
-			else:
-				instance._load_monitor = None
+				# this is needed because cpu plugin by default runs its
+				# dynamic tuning but does not have dynamic option
+				if self._option_bool(instance.options.get("dynamic", True)):
+					instance.options["dynamic"] = True
 
 			self._check_arch()
 		else:
@@ -149,6 +154,9 @@ class CPULatencyPlugin(base.Plugin):
 			log.info("Latency settings from non-first CPU plugin instance '%s' will be ignored." % instance.name)
 
 		instance._first_device = list(instance.assigned_devices)[0]
+
+	def _instance_init_dynamic_tuning(self, instance):
+		instance._load_monitor = self._monitors_repository.create("load", None)
 
 	def _instance_cleanup(self, instance):
 		if instance._first_instance:
