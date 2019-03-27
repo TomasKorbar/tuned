@@ -128,7 +128,14 @@ class Plugin(object):
 		# initialize values required for dynamic tuning only if plugin is
 		# capable of dynamic tuning and instance_init allows it but if it is
 		# capable only of dynamic tuning then initialize them by default
+		plugins_dynamic_tuning_enabled = self._global_cfg.get_bool(
+			"plugin_"+ self.name + "_dynamic_tuning",
+			True
+			)
 		if not instance.has_dynamic_tuning:
+			return
+		elif not plugins_dynamic_tuning_enabled:
+			instance._has_dynamic_tuning = False
 			return
 		dynamic_init_by_choice = (self._option_bool(instance.options.get("dynamic", False)) and
 								  self.dynamic_tuning_supported)
