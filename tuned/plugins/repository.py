@@ -36,8 +36,8 @@ class Repository(PluginLoader):
 			"plugin_%s_dynamic_tuning" % (plugin_cls.name),
 			True
 			)
-		only_dynamic = (plugin_cls.dynamic_tuning_supported and
-						not plugin_cls.static_tuning_supported)
+		only_dynamic = (plugin_cls.is_dynamic_tuning_supported() and
+						not plugin_cls.is_static_tuning_supported())
 		if not plugins_dynamic_tuning_enabled and only_dynamic:
 			log.info("plugin %s supports only dynamic tuning and that is disabled in global config, stopping his initialization" % (plugin_cls.name))
 			return None

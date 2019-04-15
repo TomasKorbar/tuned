@@ -20,8 +20,13 @@ class EeePCSHEPlugin(base.Plugin):
 			raise exceptions.NotSupportedPluginException("Plugin is not supported on your hardware.")
 		super(EeePCSHEPlugin, self).__init__(*args, **kwargs)
 
-	dynamic_tuning_supported = True
-	static_tuning_supported = False
+	@classmethod
+	def is_dynamic_tuning_supported(cls):
+		return True
+
+	@classmethod
+	def is_static_tuning_supported(cls):
+		return False
 
 	@classmethod
 	def _get_config_options(self):

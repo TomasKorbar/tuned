@@ -43,8 +43,13 @@ class Plugin(object):
 
 	# by default plugin supports only static tuning and is up to each
 	# plugin individualy to set this to True if they support dynamic tuning
-	dynamic_tuning_supported = False
-	static_tuning_supported = True
+	@classmethod
+	def is_dynamic_tuning_supported(cls):
+		return False
+
+	@classmethod
+	def is_static_tuning_supported(cls):
+		return True
 
 	def cleanup(self):
 		self.destroy_instances()
@@ -138,9 +143,9 @@ class Plugin(object):
 			instance._has_dynamic_tuning = False
 			return
 		dynamic_init_by_choice = (self._option_bool(instance.options.get("dynamic", False)) and
-								  self.dynamic_tuning_supported)
-		dynamic_init_by_default = (self.dynamic_tuning_supported and
-								   not self.static_tuning_supported)
+								  self.is_dynamic_tuning_supported())
+		dynamic_init_by_default = (self.is_dynamic_tuning_supported() and
+								   not self.is_static_tuning_supported())
 		if dynamic_init_by_choice or dynamic_init_by_default:
 			self._instance_init_dynamic_tuning(instance)
 		else:

@@ -24,8 +24,9 @@ class DiskPlugin(hotplug.Plugin):
 		self._load_smallest = 0.01
 		self._cmd = commands()
 
-	dynamic_tuning_supported = True
-	static_tuning_supported = True
+	@classmethod
+	def is_dynamic_tuning_supported(cls):
+		return True
 
 	def _init_devices(self):
 		super(DiskPlugin, self)._init_devices()

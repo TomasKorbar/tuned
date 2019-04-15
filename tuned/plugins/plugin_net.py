@@ -21,8 +21,9 @@ class NetTuningPlugin(base.Plugin):
 		self._level_steps = 6
 		self._cmd = commands()
 
-	dynamic_tuning_supported = True
-	static_tuning_supported = True
+	@classmethod
+	def is_dynamic_tuning_supported(cls):
+		return True
 
 	def _init_devices(self):
 		self._devices_supported = True
