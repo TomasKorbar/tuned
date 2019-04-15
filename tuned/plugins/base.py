@@ -51,6 +51,14 @@ class Plugin(object):
 	def is_static_tuning_supported(cls):
 		return True
 
+	# If plugin wants to run it's dynamic tuning by default then it must
+	# override this
+	@classmethod
+	def dynamic_tuning_enabled_by_default(cls):
+		"""Return if plugin's dynamic tuning should be initialized by default
+		"""
+		return False
+
 	def cleanup(self):
 		self.destroy_instances()
 
@@ -137,19 +145,18 @@ class Plugin(object):
 			"plugin_"+ self.name + "_dynamic_tuning",
 			True
 			)
-		if not instance.has_dynamic_tuning:
+		if not instance.dynamic_tuning_enabled:
 			return
 		elif not plugins_dynamic_tuning_enabled:
-			instance._has_dynamic_tuning = False
+			instance.forbid_dynamic_tuning()
 			return
-		dynamic_init_by_choice = (self._option_bool(instance.options.get("dynamic", False)) and
+		dynamic_init_by_choice = (instance.dynamic_tuning_enabled and
 								  self.is_dynamic_tuning_supported())
-		dynamic_init_by_default = (self.is_dynamic_tuning_supported() and
-								   not self.is_static_tuning_supported())
-		if dynamic_init_by_choice or dynamic_init_by_default:
+
+		if dynamic_init_by_choice:
 			self._instance_init_dynamic_tuning(instance)
 		else:
-			instance._has_dynamic_tuning = False
+			instance.forbid_dynamic_tuning()
 
 	def destroy_instances(self):
 		"""Destroy all instances."""
@@ -168,7 +175,7 @@ class Plugin(object):
 
 		Note:
 			Dynamic tuning is not initialized or allowed if
-			instance._has_dynamic_tuning is set to False
+			instance.forbid_dynamic_tuning method is called
 		"""
 		raise NotImplementedError()
 
@@ -303,7 +310,7 @@ class Plugin(object):
 			self._instance_post_static(instance, True)
 			self._call_device_script(instance, instance.script_post,
 					"apply", instance.assigned_devices)
-		if instance.has_dynamic_tuning and self._global_cfg.get(consts.CFG_DYNAMIC_TUNING, consts.CFG_DEF_DYNAMIC_TUNING):
+		if instance.dynamic_tuning_enabled and self._global_cfg.get(consts.CFG_DYNAMIC_TUNING, consts.CFG_DEF_DYNAMIC_TUNING):
 			self._run_for_each_device(instance, self._instance_apply_dynamic, instance.assigned_devices)
 		instance.processed_devices.update(instance.assigned_devices)
 		instance.assigned_devices.clear()
@@ -336,14 +343,14 @@ class Plugin(object):
 		"""
 		if not instance.active:
 			return
-		if instance.has_dynamic_tuning and self._global_cfg.get(consts.CFG_DYNAMIC_TUNING, consts.CFG_DEF_DYNAMIC_TUNING):
+		if instance.dynamic_tuning_enabled and self._global_cfg.get(consts.CFG_DYNAMIC_TUNING, consts.CFG_DEF_DYNAMIC_TUNING):
 			self._run_for_each_device(instance, self._instance_update_dynamic, instance.processed_devices.copy())
 
 	def instance_unapply_tuning(self, instance, full_rollback = False):
 		"""
 		Remove all tunings applied by the plugin instance.
 		"""
-		if instance.has_dynamic_tuning and self._global_cfg.get(consts.CFG_DYNAMIC_TUNING, consts.CFG_DEF_DYNAMIC_TUNING):
+		if instance.dynamic_tuning_enabled and self._global_cfg.get(consts.CFG_DYNAMIC_TUNING, consts.CFG_DEF_DYNAMIC_TUNING):
 			self._run_for_each_device(instance, self._instance_unapply_dynamic, instance.processed_devices)
 		if instance.has_static_tuning:
 			self._call_device_script(instance, instance.script_post,

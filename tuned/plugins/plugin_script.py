@@ -19,7 +19,6 @@ class ScriptPlugin(base.Plugin):
 
 	def _instance_init(self, instance):
 		instance._has_static_tuning = True
-		instance._has_dynamic_tuning = False
 		if instance.options["script"] is not None:
 			# FIXME: this hack originated from profiles merger
 			assert isinstance(instance.options["script"], list)

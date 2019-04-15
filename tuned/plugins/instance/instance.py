@@ -11,9 +11,10 @@ class Instance(object):
 		self._script_post = script_post
 		self._options = options
 
+		self._dynamic_tuning_enabled = options.pop("dynamic", plugin.dynamic_tuning_enabled_by_default()) in ["true","1"]
+
 		self._active = True
 		self._has_static_tuning = False
-		self._has_dynamic_tuning = False
 		self._assigned_devices = set()
 		self._processed_devices = set()
 
@@ -69,10 +70,13 @@ class Instance(object):
 		return self._has_static_tuning
 
 	@property
-	def has_dynamic_tuning(self):
-		return self._has_dynamic_tuning
+	def dynamic_tuning_enabled(self):
+		return self._dynamic_tuning_enabled
 
 	# methods
+
+	def forbid_dynamic_tuning(self):
+		self._dynamic_tuning_enabled = False
 
 	def apply_tuning(self):
 		self._plugin.instance_apply_tuning(self)

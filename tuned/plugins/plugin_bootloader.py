@@ -26,7 +26,6 @@ class BootloaderPlugin(base.Plugin):
 		self._cmd = commands()
 
 	def _instance_init(self, instance):
-		instance._has_dynamic_tuning = False
 		instance._has_static_tuning = True
 		# controls grub2_cfg rewrites in _instance_post_static
 		self.update_grub2_cfg = False

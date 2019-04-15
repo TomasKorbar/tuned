@@ -25,6 +25,10 @@ class NetTuningPlugin(base.Plugin):
 	def is_dynamic_tuning_supported(cls):
 		return True
 
+	@classmethod
+	def dynamic_tuning_enabled_by_default(cls):
+		return True
+
 	def _init_devices(self):
 		self._devices_supported = True
 		self._free_devices = set()
@@ -42,7 +46,6 @@ class NetTuningPlugin(base.Plugin):
 
 	def _instance_init(self, instance):
 		instance._has_static_tuning = True
-		instance._has_dynamic_tuning = True
 		instance._load_monitor = None
 		instance._idle = None
 		instance._stats = None
@@ -128,7 +131,6 @@ class NetTuningPlugin(base.Plugin):
 	@classmethod
 	def _get_config_options(cls):
 		return {
-			"dynamic": True,
 			"wake_on_lan": None,
 			"nf_conntrack_hashsize": None,
 			"features": None,

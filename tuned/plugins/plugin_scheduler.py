@@ -79,7 +79,6 @@ class SchedulerPlugin(base.Plugin):
 				command_name = "irq")
 
 	def _instance_init(self, instance):
-		instance._has_dynamic_tuning = False
 		instance._has_static_tuning = True
 		# this is hack, runtime_tuning should be covered by dynamic_tuning configuration
 		# TODO: add per plugin dynamic tuning configuration and use dynamic_tuning configuration

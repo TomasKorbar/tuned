@@ -22,7 +22,6 @@ class SysfsPlugin(base.Plugin):
 		self._cmd = commands()
 
 	def _instance_init(self, instance):
-		instance._has_dynamic_tuning = False
 		instance._has_static_tuning = True
 
 		instance._sysfs = dict([(os.path.normpath(key_value[0]), key_value[1]) for key_value in list(instance.options.items())])
