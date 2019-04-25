@@ -133,7 +133,6 @@ class CPULatencyPlugin(base.Plugin):
 
 	def _instance_init(self, instance):
 		instance._has_static_tuning = True
-		instance._has_dynamic_tuning = False
 
 		instance._load_monitor = None
 		# only the first instance of the plugin can control the latency
@@ -146,12 +145,8 @@ class CPULatencyPlugin(base.Plugin):
 				self._has_pm_qos = False
 			self._latency = None
 
-			if instance.options["force_latency"] is None:
-				instance._has_dynamic_tuning = True
-				# this is needed because cpu plugin by default runs its
-				# dynamic tuning but does not have dynamic option
-				if self._option_bool(instance.options.get("dynamic", True)):
-					instance.options["dynamic"] = True
+			if instance.options["force_latency"] is not None:
+				instance.forbid_dynamic_tuning()
 
 			self._check_arch()
 		else:

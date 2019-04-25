@@ -20,7 +20,6 @@ class ModulesPlugin(base.Plugin):
 		self._cmd = commands()
 
 	def _instance_init(self, instance):
-		instance._has_dynamic_tuning = False
 		instance._has_static_tuning = True
 		instance._modules = instance.options
 

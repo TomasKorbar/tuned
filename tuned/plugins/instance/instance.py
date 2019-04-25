@@ -1,3 +1,5 @@
+from tuned.utils.parsers.parser_instance_options import ParserInstanceOptions
+
 class Instance(object):
 	"""
 	"""
@@ -9,11 +11,13 @@ class Instance(object):
 		self._devices_udev_regex = devices_udev_regex
 		self._script_pre = script_pre
 		self._script_post = script_post
-		self._options = options
+		parser = ParserInstanceOptions(self._plugin)
+		self._options, instance_management_options = parser.parse_options(options)
+
+		self._dynamic_tuning_enabled = instance_management_options["dynamic"]
 
 		self._active = True
 		self._has_static_tuning = False
-		self._has_dynamic_tuning = False
 		self._assigned_devices = set()
 		self._processed_devices = set()
 
@@ -69,10 +73,13 @@ class Instance(object):
 		return self._has_static_tuning
 
 	@property
-	def has_dynamic_tuning(self):
-		return self._has_dynamic_tuning
+	def dynamic_tuning_enabled(self):
+		return self._dynamic_tuning_enabled
 
 	# methods
+
+	def forbid_dynamic_tuning(self):
+		self._dynamic_tuning_enabled = False
 
 	def apply_tuning(self):
 		self._plugin.instance_apply_tuning(self)

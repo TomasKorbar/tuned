@@ -43,7 +43,6 @@ class EeePCSHEPlugin(base.Plugin):
 
 	def _instance_init(self, instance):
 		instance._has_static_tuning = False
-		instance._has_dynamic_tuning = True
 
 	def _instance_init_dynamic_tuning(self, instance):
 		instance._she_mode = None

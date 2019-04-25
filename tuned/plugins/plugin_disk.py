@@ -75,7 +75,6 @@ class DiskPlugin(hotplug.Plugin):
 	@classmethod
 	def _get_config_options(cls):
 		return {
-			"dynamic"            : True, # FIXME: do we want this default?
 			"elevator"           : None,
 			"apm"                : None,
 			"spindown"           : None,
@@ -93,8 +92,6 @@ class DiskPlugin(hotplug.Plugin):
 
 	def _instance_init(self, instance):
 		instance._has_static_tuning = True
-		# allow values needed for dynamic tuning to be initialized
-		instance._has_dynamic_tuning = True
 
 		self._apm_errcnt = 0
 		self._spindown_errcnt = 0

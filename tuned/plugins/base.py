@@ -93,17 +93,6 @@ class Plugin(object):
 		"""List of config options used by dynamic tuning. Their previous values will be automatically saved and restored."""
 		return []
 
-	def _get_effective_options(self, options):
-		"""Merge provided options with plugin default options."""
-		# TODO: _has_dynamic_options is a hack
-		effective = self._get_config_options().copy()
-		for key in options:
-			if key in effective or self._has_dynamic_options:
-				effective[key] = options[key]
-			else:
-				log.warn("Unknown option '%s' for plugin '%s'." % (key, self.__class__.__name__))
-		return effective
-
 	#
 	# Interface for manipulation with instances of the plugin.
 	#
@@ -113,9 +102,8 @@ class Plugin(object):
 		if name in self._instances:
 			raise Exception("Plugin instance with name '%s' already exists." % name)
 
-		effective_options = self._get_effective_options(options)
 		instance = self._instance_factory.create(self, name, devices_expression, devices_udev_regex, \
-			script_pre, script_post, effective_options)
+			script_pre, script_post, options)
 		self._instances[name] = instance
 
 		return instance
@@ -142,19 +130,18 @@ class Plugin(object):
 			"plugin_"+ self.name + "_dynamic_tuning_allowed",
 			True
 			)
-		if not instance.has_dynamic_tuning:
+		if not instance.dynamic_tuning_enabled:
 			return
 		elif not plugin_dynamic_tuning_enabled:
-			instance._has_dynamic_tuning = False
+			instance.forbid_dynamic_tuning()
 			return
-		dynamic_init_by_choice = (self._option_bool(instance.options.get("dynamic", False)) and
-								  self.dynamic_tuning_supported())
-		dynamic_init_by_default = (self.dynamic_tuning_supported() and
-								   not self.static_tuning_supported())
-		if dynamic_init_by_choice or dynamic_init_by_default:
+		dynamic_init_by_choice = (instance.dynamic_tuning_enabled and
+								  self.is_dynamic_tuning_supported())
+
+		if dynamic_init_by_choice:
 			self._instance_init_dynamic_tuning(instance)
 		else:
-			instance._has_dynamic_tuning = False
+			instance.forbid_dynamic_tuning()
 
 	def destroy_instances(self):
 		"""Destroy all instances."""
@@ -173,7 +160,7 @@ class Plugin(object):
 
 		Note:
 			Dynamic tuning is not initialized or allowed if
-			instance._has_dynamic_tuning is set to False
+			instance.forbid_dynamic_tuning method is called
 		"""
 		raise NotImplementedError()
 
@@ -308,7 +295,7 @@ class Plugin(object):
 			self._instance_post_static(instance, True)
 			self._call_device_script(instance, instance.script_post,
 					"apply", instance.assigned_devices)
-		if instance.has_dynamic_tuning and self._global_cfg.get(consts.CFG_DYNAMIC_TUNING, consts.CFG_DEF_DYNAMIC_TUNING):
+		if instance.dynamic_tuning_enabled and self._global_cfg.get(consts.CFG_DYNAMIC_TUNING, consts.CFG_DEF_DYNAMIC_TUNING):
 			self._run_for_each_device(instance, self._instance_apply_dynamic, instance.assigned_devices)
 		instance.processed_devices.update(instance.assigned_devices)
 		instance.assigned_devices.clear()
@@ -341,14 +328,14 @@ class Plugin(object):
 		"""
 		if not instance.active:
 			return
-		if instance.has_dynamic_tuning and self._global_cfg.get(consts.CFG_DYNAMIC_TUNING, consts.CFG_DEF_DYNAMIC_TUNING):
+		if instance.dynamic_tuning_enabled and self._global_cfg.get(consts.CFG_DYNAMIC_TUNING, consts.CFG_DEF_DYNAMIC_TUNING):
 			self._run_for_each_device(instance, self._instance_update_dynamic, instance.processed_devices.copy())
 
 	def instance_unapply_tuning(self, instance, full_rollback = False):
 		"""
 		Remove all tunings applied by the plugin instance.
 		"""
-		if instance.has_dynamic_tuning and self._global_cfg.get(consts.CFG_DYNAMIC_TUNING, consts.CFG_DEF_DYNAMIC_TUNING):
+		if instance.dynamic_tuning_enabled and self._global_cfg.get(consts.CFG_DYNAMIC_TUNING, consts.CFG_DEF_DYNAMIC_TUNING):
 			self._run_for_each_device(instance, self._instance_unapply_dynamic, instance.processed_devices)
 		if instance.has_static_tuning:
 			self._call_device_script(instance, instance.script_post,

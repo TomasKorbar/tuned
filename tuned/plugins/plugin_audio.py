@@ -30,7 +30,6 @@ class AudioPlugin(base.Plugin):
 
 	def _instance_init(self, instance):
 		instance._has_static_tuning = True
-		instance._has_dynamic_tuning = False
 
 	def _instance_cleanup(self, instance):
 		pass
