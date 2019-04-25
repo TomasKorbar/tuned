@@ -98,7 +98,7 @@ class SchedulerPlugin(base.Plugin):
 		instance._scheduler = instance.options
 		for k in instance._scheduler:
 			instance._scheduler[k] = self._variables.expand(instance._scheduler[k])
-		if self._cmd.get_bool(instance._scheduler.get("runtime", 1)) == "0":
+		if not self._parser.get_bool(instance._scheduler.get("runtime", 1)):
 			instance._runtime_tuning = False
 		instance._terminate = threading.Event()
 		if self._daemon and instance._runtime_tuning:

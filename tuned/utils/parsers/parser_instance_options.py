@@ -12,7 +12,7 @@ class ParserInstanceOptions(ParserOptions):
 		return {"dynamic": self._plugin.dynamic_tuning_enabled_by_default()}
 
 	def _instance_management_options_parsers(self):
-		return {"dynamic": self.option_bool}
+		return {"dynamic": self.get_bool}
 
 	def _parse_instance_option(self, key, value):
 		return self._instance_management_options_parsers()[key](value)

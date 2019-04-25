@@ -269,7 +269,7 @@ class BootloaderPlugin(base.Plugin):
 		if verify:
 			return None
 		if enabling and value is not None:
-			self._initrd_remove_dir = self._cmd.get_bool(value) == "1"
+			self._initrd_remove_dir = self._parser.get_bool(value) == True
 
 	@command_custom("initrd_add_img", per_device = False, priority = 10)
 	def _initrd_add_img(self, enabling, value, verify, ignore_missing):

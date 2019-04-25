@@ -78,7 +78,7 @@ class AudioPlugin(base.Plugin):
 
 	@command_set("reset_controller", per_device = True)
 	def _set_reset_controller(self, value, device, sim):
-		v = cmd.get_bool(value)
+		v = "1" if self._parser.get_bool(value) else "0"
 		sys_file = self._reset_controller_path(device)
 		if os.path.exists(sys_file):
 			if not sim:
@@ -92,5 +92,5 @@ class AudioPlugin(base.Plugin):
 		if os.path.exists(sys_file):
 			value = cmd.read_file(sys_file)
 			if len(value) > 0:
-				return cmd.get_bool(value)
+				return "1" if self._parser.get_bool(value) else "0"
 		return None

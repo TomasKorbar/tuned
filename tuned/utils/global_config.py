@@ -4,6 +4,7 @@ from validate import Validator
 from tuned.exceptions import TunedException
 import tuned.consts as consts
 from tuned.utils.commands import commands
+from tuned.utils.parsers.parser_options import ParserOptions
 
 __all__ = ["GlobalConfig"]
 
@@ -20,6 +21,7 @@ class GlobalConfig():
 		self._cfg = {}
 		self.load_config(file_name=config_file)
 		self._cmd = commands()
+		self._parser = ParserOptions()
 
 	def load_config(self, file_name = consts.GLOBAL_CONFIG_FILE):
 		"""
@@ -41,9 +43,7 @@ class GlobalConfig():
 		return self._cfg.get(key, default)
 
 	def get_bool(self, key, default = None):
-		if self._cmd.get_bool(self.get(key, default)) == "1":
-			return True
-		return False
+		return self._parser.get_bool(self.get(key, default))
 
 	def set(self, key, value):
 		self._cfg[key] = value
