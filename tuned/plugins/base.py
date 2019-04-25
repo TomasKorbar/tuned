@@ -4,6 +4,7 @@ import tuned.profiles.variables
 import tuned.logs
 import collections
 from tuned.utils.commands import commands
+from tuned.utils.parsers.parser_options import ParserOptions
 import os
 from subprocess import Popen, PIPE
 
@@ -38,6 +39,8 @@ class Plugin(object):
 		self._devices_inited = False
 
 		self._options_used_by_dynamic = self._get_config_options_used_by_dynamic()
+		# default parser for plugins
+		self._parser = ParserOptions()
 
 		self._cmd = commands()
 
@@ -50,6 +53,14 @@ class Plugin(object):
 	@classmethod
 	def static_tuning_supported(cls):
 		return True
+
+	# If plugin wants to run its dynamic tuning by default then it must
+	# override this
+	@classmethod
+	def dynamic_tuning_enabled_by_default(cls):
+		"""Return if plugin's dynamic tuning should be initialized by default
+		"""
+		return False
 
 	def cleanup(self):
 		self.destroy_instances()
@@ -92,12 +103,6 @@ class Plugin(object):
 			else:
 				log.warn("Unknown option '%s' for plugin '%s'." % (key, self.__class__.__name__))
 		return effective
-
-	def _option_bool(self, value):
-		if type(value) is bool:
-			return value
-		value = str(value).lower()
-		return value == "true" or value == "1"
 
 	#
 	# Interface for manipulation with instances of the plugin.

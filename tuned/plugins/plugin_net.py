@@ -25,6 +25,10 @@ class NetTuningPlugin(base.Plugin):
 	def dynamic_tuning_supported(cls):
 		return True
 
+	@classmethod
+	def dynamic_tuning_enabled_by_default(cls):
+		return True
+
 	def _init_devices(self):
 		self._devices_supported = True
 		self._free_devices = set()

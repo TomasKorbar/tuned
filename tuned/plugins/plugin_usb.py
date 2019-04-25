@@ -42,7 +42,7 @@ class USBPlugin(base.Plugin):
 
 	@command_set("autosuspend", per_device=True)
 	def _set_autosuspend(self, value, device, sim):
-		enable = self._option_bool(value)
+		enable = self._parser.option_bool(value)
 		if enable is None:
 			return None
 

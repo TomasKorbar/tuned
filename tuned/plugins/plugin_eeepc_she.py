@@ -29,6 +29,10 @@ class EeePCSHEPlugin(base.Plugin):
 		return False
 
 	@classmethod
+	def dynamic_tuning_enabled_by_default(cls):
+		return True
+
+	@classmethod
 	def _get_config_options(self):
 		return {
 			"load_threshold_normal"    : 0.6,

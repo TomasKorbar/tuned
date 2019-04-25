@@ -129,7 +129,7 @@ class MountsPlugin(base.Plugin):
 				command_name = "disable_barriers",
 				device_name = mountpoint)
 		force = str(value).lower() == "force"
-		value = force or self._option_bool(value)
+		value = force or self._parser.option_bool(value)
 
 		if start:
 			if not value:
