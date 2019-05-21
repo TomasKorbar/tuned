@@ -135,8 +135,16 @@ class Plugin(object):
 		elif not plugin_dynamic_tuning_enabled:
 			instance.forbid_dynamic_tuning()
 			return
-		dynamic_init_by_choice = (instance.dynamic_tuning_enabled and
-								  self.is_dynamic_tuning_supported())
+
+		if (instance.dynamic_tuning_enabled and
+				self.dynamic_tuning_supported()):
+			dynamic_init_by_choice = True
+		elif (instance.dynamic_tuning_enabled and
+				not self.dynamic_tuning_supported()):
+			dynamic_init_by_choice = False
+			log.error("Plugin %s does not support dynamic tuning" % (self.name))
+		else:
+			dynamic_init_by_choice = False
 
 		if dynamic_init_by_choice:
 			self._instance_init_dynamic_tuning(instance)
