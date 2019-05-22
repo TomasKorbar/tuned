@@ -21,6 +21,10 @@ class NetTuningPlugin(base.Plugin):
 		self._level_steps = 6
 		self._cmd = commands()
 
+	@classmethod
+	def dynamic_tuning_supported(cls):
+		return True
+
 	def _init_devices(self):
 		self._devices_supported = True
 		self._free_devices = set()
@@ -38,16 +42,15 @@ class NetTuningPlugin(base.Plugin):
 
 	def _instance_init(self, instance):
 		instance._has_static_tuning = True
-		if self._option_bool(instance.options["dynamic"]):
-			instance._has_dynamic_tuning = True
-			instance._load_monitor = self._monitors_repository.create("net", instance.assigned_devices)
-			instance._idle = {}
-			instance._stats = {}
-		else:
-			instance._has_dynamic_tuning = False
-			instance._load_monitor = None
-			instance._idle = None
-			instance._stats = None
+		instance._has_dynamic_tuning = True
+		instance._load_monitor = None
+		instance._idle = None
+		instance._stats = None
+
+	def _instance_init_dynamic_tuning(self, instance):
+		instance._load_monitor = self._monitors_repository.create("net", instance.assigned_devices)
+		instance._idle = {}
+		instance._stats = {}
 
 	def _instance_cleanup(self, instance):
 		if instance._load_monitor is not None:

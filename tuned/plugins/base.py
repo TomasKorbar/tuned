@@ -41,6 +41,16 @@ class Plugin(object):
 
 		self._cmd = commands()
 
+	# by default plugin supports only static tuning and is up to each
+	# plugin individualy to set this to True if they support dynamic tuning
+	@classmethod
+	def dynamic_tuning_supported(cls):
+		return False
+
+	@classmethod
+	def static_tuning_supported(cls):
+		return True
+
 	def cleanup(self):
 		self.destroy_instances()
 
@@ -120,6 +130,26 @@ class Plugin(object):
 		"""Initialize an instance."""
 		log.debug("initializing instance %s (%s)" % (instance.name, self.name))
 		self._instance_init(instance)
+		# initialize values required for dynamic tuning only if plugin is
+		# capable of dynamic tuning and _instance_init allows it but if it is
+		# capable only of dynamic tuning then initialize them by default
+		plugin_dynamic_tuning_enabled = self._global_cfg.get_bool(
+			"plugin_"+ self.name + "_dynamic_tuning_allowed",
+			True
+			)
+		if not instance.has_dynamic_tuning:
+			return
+		elif not plugin_dynamic_tuning_enabled:
+			instance._has_dynamic_tuning = False
+			return
+		dynamic_init_by_choice = (self._option_bool(instance.options.get("dynamic", False)) and
+								  self.dynamic_tuning_supported())
+		dynamic_init_by_default = (self.dynamic_tuning_supported() and
+								   not self.static_tuning_supported())
+		if dynamic_init_by_choice or dynamic_init_by_default:
+			self._instance_init_dynamic_tuning(instance)
+		else:
+			instance._has_dynamic_tuning = False
 
 	def destroy_instances(self):
 		"""Destroy all instances."""
@@ -133,9 +163,20 @@ class Plugin(object):
 		self._instance_cleanup(instance)
 
 	def _instance_init(self, instance):
+		"""Set default values of instance variables and permit or forbid
+		dynamic tuning
+
+		Note:
+			Dynamic tuning is not initialized or allowed if
+			instance._has_dynamic_tuning is set to False
+		"""
 		raise NotImplementedError()
 
 	def _instance_cleanup(self, instance):
+		raise NotImplementedError()
+
+	def _instance_init_dynamic_tuning(self, instance):
+		"""Set up things neccessary for dynamic tuning"""
 		raise NotImplementedError()
 
 	#
