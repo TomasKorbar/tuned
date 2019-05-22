@@ -32,6 +32,15 @@ class Repository(PluginLoader):
 	def create(self, plugin_name):
 		log.debug("creating plugin %s" % plugin_name)
 		plugin_cls = self.load_plugin(plugin_name)
+		plugin_dynamic_tuning_enabled = self._global_cfg.get_bool(
+			"plugin_%s_dynamic_tuning" % (plugin_cls.name),
+			True
+			)
+		only_dynamic = (plugin_cls.dynamic_tuning_supported() and
+						not plugin_cls.static_tuning_supported())
+		if not plugin_dynamic_tuning_enabled and only_dynamic:
+			log.info("plugin %s supports only dynamic tuning and that is disabled in global config, stopping its initialization" % (plugin_cls.name))
+			return None
 		plugin_instance = plugin_cls(self._monitor_repository, self._storage_factory, self._hardware_inventory, self._device_matcher,\
 			self._device_matcher_udev, self._plugin_instance_factory, self._global_cfg, self._variables)
 		self._plugins.add(plugin_instance)
