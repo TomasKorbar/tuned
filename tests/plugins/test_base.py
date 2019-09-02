@@ -42,17 +42,6 @@ class PluginBaseTestCase(unittest2.TestCase):
 			device_matcher_udev,plugin_instance_factory,None,\
 			profiles.variables.Variables())
 
-	def test_get_effective_options(self):
-		self.assertEqual(self._plugin._get_effective_options(\
-			{'default_option1':'default_value2'}),\
-			{'default_option1': 'default_value2',\
-			'default_option2': 'default_value2'})
-
-	def test_option_bool(self):
-		self.assertTrue(self._plugin._option_bool(True))
-		self.assertTrue(self._plugin._option_bool('true'))
-		self.assertFalse(self._plugin._option_bool('false'))
-
 	def test_create_instance(self):
 		instance = self._plugin.create_instance(\
 			'first_instance','test','test','test','test',\
