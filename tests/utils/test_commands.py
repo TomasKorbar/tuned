@@ -20,18 +20,6 @@ class CommandsTestCase(unittest2.TestCase):
 		self._test_dir = tempfile.mkdtemp()
 		self._test_file = tempfile.NamedTemporaryFile(mode='r',dir = self._test_dir)
 
-	def test_get_bool(self):
-		positive_values = ['y','yes','t','true']
-		negative_values = ['n','no','f','false']
-
-		for val in positive_values:
-			self.assertEqual(self._commands.get_bool(val),"1")
-
-		for val in negative_values:
-			self.assertEqual(self._commands.get_bool(val),"0")
-
-		self.assertEqual(self._commands.get_bool('bad_value'),'bad_value')
-
 	def test_remove_ws(self):
 		self.assertEqual(self._commands.remove_ws(' a  bc '),'a bc')
 
