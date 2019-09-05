@@ -1,0 +1,77 @@
+version: 2.1
+jobs:
+  fedora30_python3_unit_tests:
+    # build docker image on default machine
+    machine: True
+    steps:
+      # checkout git repository
+      - checkout
+      - run:
+          name: build docker image for f30 python3
+          command: |
+            docker build --build-arg PYTHON=3 --build-arg OS=fedora:30 --build-arg PACKAGE_MANAGER=dnf -t tuned_image -f tests/Dockerfile .
+      - run:
+          name: run tests on f30 with python3
+          command: |
+            docker run tuned_image /bin/sh -c "make test PYTHON=/usr/bin/python3"
+  centos7_python2_unit_tests:
+    # build docker image on default machine
+    machine: True
+    steps:
+      # checkout git repository
+      - checkout
+      - run:
+          name: build docker image for centos7 python2
+          command: |
+            docker build --build-arg PYTHON=2 --build-arg OS=centos:7 --build-arg PACKAGE_MANAGER=yum -t tuned_image -f tests/Dockerfile .
+      - run:
+          name: run tests on centos7 with python2
+          command: |
+            docker run tuned_image /bin/sh -c "make test PYTHON=/usr/bin/python2"
+  lint:
+    # for linting we will use circle ci python docker image
+    docker:
+    - image: circleci/python:3.7.4
+    steps:
+      # checkout git repository
+      - checkout
+      - run:
+          name: prepare virtual environment for installation of pylint
+          command: |
+            mkdir -p ./venv
+            virtualenv ./venv
+      - run:
+          name: install pylint with pip
+          command: |
+            . venv/bin/activate
+            pip install pylint
+      - run:
+          name: download tool for comparing of pylints outputs
+          command: |
+            git clone https://github.com/TomasKorbar/pylint_regexer ./regexer
+      - run:
+          name: check current code with pylint
+          command: |
+            . venv/bin/activate
+            pylint -E --output-format=parseable -s n --exit-zero ./tuned/ > /tmp/new_pl_output
+      - run:
+          name: check code in master branch
+          command: |
+            git checkout origin/master
+            . venv/bin/activate
+            pylint -E --output-format=parseable -s n --exit-zero ./tuned/ > /tmp/old_pl_output
+      - run:
+          name: compare pylints outputs
+          command: |
+            python3 ./regexer/pylint_regexer.py /tmp/old_pl_output /tmp/new_pl_output
+      - run:
+          name: show difference between outputs
+          when: on_fail
+          command: git diff /tmp/old_pl_output /tmp/new_pl_output
+workflows:
+  version: 2
+  tests:
+    jobs:
+      - fedora30_python3_unit_tests
+      - centos7_python2_unit_tests
+      - lint
