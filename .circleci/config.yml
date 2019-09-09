@@ -36,38 +36,41 @@ jobs:
       # checkout git repository
       - checkout
       - run:
-          name: prepare virtual environment for installation of pylint
+          name: Clone tool for comparing of pylint outputs
+          command: git clone https://github.com/TomasKorbar/comparerr ./comparerr
+      - run:
+          name: prepare virtual environment
           command: |
             mkdir -p ./venv
             virtualenv ./venv
       - run:
-          name: install pylint with pip
+          name: install pylint and comparerr with pip
           command: |
             . venv/bin/activate
             pip install pylint
-      - run:
-          name: download tool for comparing of pylints outputs
-          command: |
-            git clone https://github.com/TomasKorbar/pylint_regexer ./regexer
+            pip install ./comparerr
       - run:
           name: check current code with pylint
           command: |
             . venv/bin/activate
-            pylint -E --output-format=parseable -s n --exit-zero ./tuned/ > /tmp/new_pl_output
+            pylint -E --msg-template="{abspath}:{path}:{line}:{msg_id}:{msg}" -s n --exit-zero ./tuned/ > /tmp/new_pl_output
       - run:
           name: check code in master branch
           command: |
             git checkout origin/master
             . venv/bin/activate
-            pylint -E --output-format=parseable -s n --exit-zero ./tuned/ > /tmp/old_pl_output
+            pylint -E --msg-template="{abspath}:{path}:{line}:{msg_id}:{msg}" -s n --exit-zero ./tuned/ > /tmp/old_pl_output
       - run:
-          name: compare pylints outputs
+          name: Convert pylint outputs to comparerr format
           command: |
-            python3 ./regexer/pylint_regexer.py /tmp/old_pl_output /tmp/new_pl_output
+            . venv/bin/activate
+            pylint2comparerr /tmp/new_pl_output /tmp/new_cmprr_errors
+            pylint2comparerr /tmp/old_pl_output /tmp/old_cmprr_errors
       - run:
-          name: show difference between outputs
-          when: on_fail
-          command: git diff /tmp/old_pl_output /tmp/new_pl_output
+          name: Compare errors in old and new version
+          command: |
+            . venv/bin/activate
+            comparerr /tmp/old_cmprr_errors /tmp/new_cmprr_errors --generate-report
 workflows:
   version: 2
   tests:
