@@ -54,17 +54,13 @@ jobs:
           command: |
             . venv/bin/activate
             pylint -E --msg-template="{abspath}:{path}:{line}:{msg_id}:{msg}" -s n --exit-zero ./tuned/ > /tmp/new_pl_output
+            pylint2comparerr /tmp/new_pl_output /tmp/new_cmprr_errors
       - run:
           name: check code in master branch
           command: |
             git checkout origin/master
             . venv/bin/activate
             pylint -E --msg-template="{abspath}:{path}:{line}:{msg_id}:{msg}" -s n --exit-zero ./tuned/ > /tmp/old_pl_output
-      - run:
-          name: Convert pylint outputs to comparerr format
-          command: |
-            . venv/bin/activate
-            pylint2comparerr /tmp/new_pl_output /tmp/new_cmprr_errors
             pylint2comparerr /tmp/old_pl_output /tmp/old_cmprr_errors
       - run:
           name: Compare errors in old and new version
