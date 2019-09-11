@@ -50,23 +50,10 @@ jobs:
             pip install pylint
             pip install ./comparerr
       - run:
-          name: check current code with pylint
+          name: compare master branch with current changes
           command: |
             . venv/bin/activate
-            pylint -E --msg-template="{abspath}:{path}:{line}:{msg_id}:{msg}" -s n --exit-zero ./tuned/ > /tmp/new_pl_output
-            pylint2comparerr /tmp/new_pl_output /tmp/new_cmprr_errors
-      - run:
-          name: check code in master branch
-          command: |
-            git checkout origin/master
-            . venv/bin/activate
-            pylint -E --msg-template="{abspath}:{path}:{line}:{msg_id}:{msg}" -s n --exit-zero ./tuned/ > /tmp/old_pl_output
-            pylint2comparerr /tmp/old_pl_output /tmp/old_cmprr_errors
-      - run:
-          name: Compare errors in old and new version
-          command: |
-            . venv/bin/activate
-            comparerr /tmp/old_cmprr_errors /tmp/new_cmprr_errors --generate-report
+            comparerr "/home/circleci/project/.git" "origin/master" "$CIRCLE_SHA1" --error-only --targets tuned tests
 workflows:
   version: 2
   tests:
