@@ -53,7 +53,7 @@ jobs:
           name: compare master branch with current changes
           command: |
             . venv/bin/activate
-            comparerr "/home/circleci/project/.git" "origin/master" "$CIRCLE_SHA1" --error-only --targets tuned tests
+            comparerr "/home/circleci/project/.git" "origin/master" "$CIRCLE_SHA1" --error-only --targets tuned tests \*.py
 workflows:
   version: 2
   tests:
