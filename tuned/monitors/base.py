@@ -112,6 +112,7 @@ class Monitor(object):
 			self._updating_devices.add(device)
 
 	def remove_device(self, device):
+		var = 0
 		assert (isinstance(device,str) or isinstance(device,unicode))
 		if device in self._devices:
 			self._devices.remove(device)
