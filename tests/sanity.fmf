@@ -1,0 +1,7 @@
+summary:
+    Basic tests
+discover:
+    how: fmf
+    repository: https://github.com/TomasKorbar/tuned_tests
+execute:
+    how: beakerlib
